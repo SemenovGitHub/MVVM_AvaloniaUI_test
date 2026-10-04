@@ -20,6 +20,11 @@ public sealed class ExceptionHandlingMiddleware : IExceptionHandlingMiddleware
             await operation();
             return null;
         }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Операция отменена");
+            throw;
+        }
         catch (Exception exception)
         {
             var message = ErrorText.Resolve(exception);

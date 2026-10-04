@@ -40,42 +40,42 @@ public sealed partial class MainViewModel : ObservableObject
     public bool HasError => ErrorMessage is not null;
 
     [RelayCommand]
-    private Task ReloadAsync()
+    private Task ReloadAsync(CancellationToken cancellationToken)
     {
-        return ExecuteAsync(async service =>
+        return ExecuteAsync(async (service, token) =>
         {
-            var tasks = await service.GetAllAsync(_cancellationTokenSource.Token);
+            var tasks = await service.GetAllAsync(token);
 
             Tasks.Clear();
             foreach (var task in tasks)
             {
                 Tasks.Add(CreateRow(task));
             }
-        });
+        }, cancellationToken);
     }
 
     [RelayCommand]
-    private Task AddAsync()
+    private Task AddAsync(CancellationToken cancellationToken)
     {
-        return ExecuteAsync(async service =>
+        return ExecuteAsync(async (service,  token) =>
         {
             var task = new TaskModel { Title = NewTaskTitle };
-            var created = await service.CreateAsync(task, _cancellationTokenSource.Token);
+            var created = await service.CreateAsync(task, token);
 
             Tasks.Add(CreateRow(created));
             NewTaskTitle = string.Empty;
-        });
+        }, cancellationToken);
     }
 
     [RelayCommand]
-    private Task DeleteSelectedAsync()
+    private Task DeleteSelectedAsync(CancellationToken cancellationToken)
     {
         if (SelectedTask is null)
         {
             return Task.CompletedTask;
         }
 
-        return DeleteRowAsync(SelectedTask, _cancellationTokenSource.Token);
+        return DeleteRowAsync(SelectedTask, cancellationToken);
     }
 
     private TaskRowViewModel CreateRow(TaskModel task)
@@ -83,44 +83,55 @@ public sealed partial class MainViewModel : ObservableObject
         return new TaskRowViewModel(task, ToggleCompletionAsync, DeleteRowAsync);
     }
 
-    private Task ToggleCompletionAsync(TaskRowViewModel row)
+    private Task ToggleCompletionAsync(TaskRowViewModel row, CancellationToken cancellationToken)
     {
         var requested = row.IsCompleted;
 
         return ExecuteAsync(
-            service => service.SetCompletionAsync(row.Id, requested, CancellationToken.None),
+            (service, token)  =>
+            {
+                return service.SetCompletionAsync(row.Id, requested, token);
+            }, cancellationToken,
             () => row.IsCompleted = !requested);
     }
 
-    private Task DeleteRowAsync(TaskRowViewModel row, CancellationToken token)
+    private Task DeleteRowAsync(TaskRowViewModel row, CancellationToken cancellationToken)
     {
-        return ExecuteAsync(async service =>
+        return ExecuteAsync(async (service, token) =>
         {
             await service.DeleteAsync(row.Id, token);
 
             Tasks.Remove(row);
-        });
+        }, cancellationToken);
     }
 
-    private async Task ExecuteAsync(Func<ITaskService, Task> operation, Action? onFailure = null)
+    private async Task ExecuteAsync(Func<ITaskService, CancellationToken, Task> operation, CancellationToken cancellationToken, Action? onFailure = null)
     {
         IsBusy = true;
         ErrorMessage = null;
 
         try
         {
+            using var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                _cancellationTokenSource.Token);
+
             ErrorMessage = await _middleware.InvokeAsync(async () =>
             {
                 await using var scope = _scopeFactory.CreateAsyncScope();
                 var service = scope.ServiceProvider.GetRequiredService<ITaskService>();
 
-                await operation(service);
+                await operation(service, linkedToken.Token);
             });
 
             if (HasError)
             {
                 onFailure?.Invoke();
             }
+        }
+        catch (OperationCanceledException)
+        {
+            onFailure?.Invoke();
         }
         finally
         {
