@@ -10,12 +10,12 @@ namespace TaskManager.Desktop;
 internal static class Program
 {
     [STAThread]
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var services = AppServices.Build();
 
         CatchUnhandledExceptions(services);
-        ApplyMigrations(services);
+        await ApplyMigrations(services);
 
         var builder = BuildAvaloniaApp(services);
         builder.StartWithClassicDesktopLifetime(args);
@@ -53,7 +53,7 @@ internal static class Program
         };
     }
 
-    private static void ApplyMigrations(IServiceProvider services)
+    private static async Task ApplyMigrations(IServiceProvider services)
     {
         using var scope = services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<TaskDbContext>>();
@@ -63,7 +63,7 @@ internal static class Program
             logger.LogInformation("Применение миграций базы данных");
 
             var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            context.Database.Migrate();
+            await context.Database.MigrateAsync();
         }
         catch (Exception exception)
         {

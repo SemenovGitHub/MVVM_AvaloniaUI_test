@@ -50,7 +50,7 @@
               HeadersVisibility="Column">
       <DataGrid.Columns>
 
-        <DataGridTemplateColumn Header="Готово" Width="90">
+        <DataGridTemplateColumn Header="Выполнено" Width="90">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="vm:TaskRowViewModel">
               <CheckBox HorizontalAlignment="Center"
