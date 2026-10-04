@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskManager.Desktop.ViewModels"
+        x:Class="TaskManager.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Список задач"
+        Width="760"
+        Height="520"
+        MinWidth="520"
+        MinHeight="320">
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="F5" Command="{Binding ReloadCommand}" />
+    <KeyBinding Gesture="Delete" Command="{Binding DeleteSelectedCommand}" />
+  </Window.KeyBindings>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16" ColumnDefinitions="*">
+
+    <DockPanel Grid.Row="0" LastChildFill="True">
+      <Button DockPanel.Dock="Right"
+              Margin="8,0,0,0"
+              Content="Добавить"
+              Command="{Binding AddCommand}"
+              IsDefault="True" />
+      <TextBox Text="{Binding NewTaskTitle}"
+               Watermark="Название задачи, затем Enter"
+               TabIndex="0">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding AddCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+    </DockPanel>
+
+    <TextBlock Grid.Row="1"
+               Margin="0,8,0,0"
+               Foreground="#C62828"
+               TextWrapping="Wrap"
+               IsVisible="{Binding HasError}"
+               Text="{Binding ErrorMessage}" />
+
+    <DataGrid Grid.Row="2"
+              Margin="0,12,0,0"
+              ItemsSource="{Binding Tasks}"
+              SelectedItem="{Binding SelectedTask}"
+              AutoGenerateColumns="False"
+              IsReadOnly="True"
+              CanUserReorderColumns="False"
+              CanUserResizeColumns="True"
+              GridLinesVisibility="Horizontal"
+              HeadersVisibility="Column">
+      <DataGrid.Columns>
+
+        <DataGridTemplateColumn Header="Готово" Width="90">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:TaskRowViewModel">
+              <CheckBox HorizontalAlignment="Center"
+                        IsChecked="{Binding IsCompleted, Mode=TwoWay}"
+                        Command="{Binding ToggleCompletionCommand}" />
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+        <DataGridTextColumn Header="Задача"
+                            Width="*"
+                            x:DataType="vm:TaskRowViewModel"
+                            Binding="{Binding Title}" />
+
+        <DataGridTextColumn Header="Создана"
+                            Width="170"
+                            x:DataType="vm:TaskRowViewModel"
+                            Binding="{Binding CreatedAt, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" />
+
+        <DataGridTemplateColumn Header="" Width="110">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:TaskRowViewModel">
+              <Button Content="Удалить"
+                      HorizontalAlignment="Stretch"
+                      Margin="4,2"
+                      Command="{Binding DeleteCommand}" />
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0" Spacing="12">
+      <Button Content="Обновить" Command="{Binding ReloadCommand}" />
+      <TextBlock VerticalAlignment="Center"
+                 Text="Enter — добавить, Delete — удалить выбранную, F5 — обновить" />
+      <TextBlock VerticalAlignment="Center"
+                 IsVisible="{Binding IsBusy}"
+                 Text="Выполняется…" />
+    </StackPanel>
+
+  </Grid>
+</Window>
