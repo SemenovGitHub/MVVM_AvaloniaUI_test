@@ -55,7 +55,7 @@
             <DataTemplate x:DataType="vm:TaskRowViewModel">
               <CheckBox HorizontalAlignment="Center"
                         IsChecked="{Binding IsCompleted, Mode=TwoWay}"
-                        Command="{Binding ToggleCompletionCommand}" />
+                        Command="{Binding SaveCompletionCommand}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
@@ -82,6 +82,22 @@
         </DataGridTemplateColumn>
 
       </DataGrid.Columns>
+      
+      <DataGrid.Styles>
+        <Style Selector="DataGridCell">
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="DataGridRow" x:DataType="vm:TaskRowViewModel">
+          <Setter Property="Classes.completed" Value="{Binding IsCompleted}" />
+        </Style>
+        <Style Selector="DataGridRow.completed">
+          <Setter Property="Background" Value="#C8E6C9" />
+        </Style>
+        <Style Selector="DataGridRow.completed:selected">
+          <Setter Property="Background" Value="#A5D6A7" />
+        </Style>
+      </DataGrid.Styles>
+      
     </DataGrid>
 
     <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0" Spacing="12">

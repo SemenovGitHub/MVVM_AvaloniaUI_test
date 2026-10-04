@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,22 +11,18 @@ namespace TaskManager.Desktop.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    
+
     private readonly IExceptionHandlingMiddleware _middleware;
-    
+
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    [ObservableProperty]
-    private string _newTaskTitle = string.Empty;
+    [ObservableProperty] private string _newTaskTitle = string.Empty;
 
-    [ObservableProperty]
-    private string? _errorMessage;
+    [ObservableProperty] private string? _errorMessage;
 
-    [ObservableProperty]
-    private bool _isBusy;
+    [ObservableProperty] private bool _isBusy;
 
-    [ObservableProperty]
-    private TaskRowViewModel? _selectedTask;
+    [ObservableProperty] private TaskRowViewModel? _selectedTask;
 
     public MainViewModel(IServiceScopeFactory scopeFactory, IExceptionHandlingMiddleware middleware)
     {
@@ -57,7 +52,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private Task AddAsync(CancellationToken cancellationToken)
     {
-        return ExecuteAsync(async (service,  token) =>
+        return ExecuteAsync(async (service, token) =>
         {
             var task = new TaskModel { Title = NewTaskTitle };
             var created = await service.CreateAsync(task, token);
@@ -88,10 +83,7 @@ public sealed partial class MainViewModel : ObservableObject
         var requested = row.IsCompleted;
 
         return ExecuteAsync(
-            (service, token)  =>
-            {
-                return service.SetCompletionAsync(row.Id, requested, token);
-            }, cancellationToken,
+            (service, token) => { return service.SetCompletionAsync(row.Id, requested, token); }, cancellationToken,
             () => row.IsCompleted = !requested);
     }
 
@@ -105,7 +97,8 @@ public sealed partial class MainViewModel : ObservableObject
         }, cancellationToken);
     }
 
-    private async Task ExecuteAsync(Func<ITaskService, CancellationToken, Task> operation, CancellationToken cancellationToken, Action? onFailure = null)
+    private async Task ExecuteAsync(Func<ITaskService, CancellationToken, Task> operation,
+        CancellationToken cancellationToken, Action? onFailure = null)
     {
         IsBusy = true;
         ErrorMessage = null;

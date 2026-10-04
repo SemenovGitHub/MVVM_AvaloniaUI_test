@@ -33,7 +33,7 @@ public sealed partial class TaskRowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task ToggleCompletionAsync(CancellationToken cancellationToken)
+    private Task SaveCompletionAsync(CancellationToken cancellationToken)
     {
         return _completionChanged(this, cancellationToken);
     }
