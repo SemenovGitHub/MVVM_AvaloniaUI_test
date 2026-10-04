@@ -3,7 +3,7 @@ using TaskManager.Desktop.Models;
 namespace TaskManager.Desktop.Services;
 
 public interface IServiceBase<TModel>
-    where TModel : class, IBusinessModel
+    where TModel : class, IModel
 {
     Task<IReadOnlyList<TModel>> GetAllAsync(CancellationToken cancellationToken);
 

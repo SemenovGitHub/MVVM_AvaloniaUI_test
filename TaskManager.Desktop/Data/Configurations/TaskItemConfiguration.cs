@@ -4,11 +4,11 @@ using TaskManager.Desktop.Data.Entities;
 
 namespace TaskManager.Desktop.Data.Configurations;
 
-public sealed class TaskItemConfiguration : IEntityTypeConfiguration<TaskItemEntity>
+public sealed class TaskItemConfiguration : IEntityTypeConfiguration<TaskEntity>
 {
     private const int ConstMaxTitleLength = 100;
     
-    public void Configure(EntityTypeBuilder<TaskItemEntity> builder)
+    public void Configure(EntityTypeBuilder<TaskEntity> builder)
     {
         builder.ToTable("tasks");
         

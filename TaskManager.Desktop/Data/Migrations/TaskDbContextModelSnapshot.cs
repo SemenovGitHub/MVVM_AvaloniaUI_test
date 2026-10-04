@@ -22,7 +22,7 @@ namespace TaskManager.Desktop.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("TaskManager.Desktop.Data.Entities.TaskItemEntity", b =>
+            modelBuilder.Entity("TaskManager.Desktop.Data.Entities.TaskEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

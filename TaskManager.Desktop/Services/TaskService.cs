@@ -7,18 +7,18 @@ using TaskManager.Desktop.Models;
 
 namespace TaskManager.Desktop.Services;
 
-public sealed class TaskService : ServiceBase<TaskItem, TaskItemEntity, ITaskRepository>, ITaskService
+public sealed class TaskService : ServiceBase<TaskModel, TaskEntity, ITaskRepository>, ITaskService
 {
     public TaskService(
         ITaskRepository repository,
-        IValidator<TaskItem> validator,
+        IValidator<TaskModel> validator,
         IMapper mapper,
         ILogger<TaskService> logger)
         : base(repository, validator, mapper, logger)
     {
     }
 
-    public async Task<TaskItem> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken)
+    public async Task<TaskModel> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken)
     {
         var entity = await Repository.SetCompletionAsync(id, isCompleted, cancellationToken);
 
@@ -27,6 +27,6 @@ public sealed class TaskService : ServiceBase<TaskItem, TaskItemEntity, ITaskRep
             entity.Id,
             isCompleted ? "выполненная" : "невыполненная");
 
-        return Mapper.Map<TaskItem>(entity);
+        return Mapper.Map<TaskModel>(entity);
     }
 }

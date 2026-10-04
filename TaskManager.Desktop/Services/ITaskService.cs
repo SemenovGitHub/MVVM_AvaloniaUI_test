@@ -2,7 +2,7 @@ using TaskManager.Desktop.Models;
 
 namespace TaskManager.Desktop.Services;
 
-public interface ITaskService : IServiceBase<TaskItem>
+public interface ITaskService : IServiceBase<TaskModel>
 {
-    Task<TaskItem> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken);
+    Task<TaskModel> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken);
 }

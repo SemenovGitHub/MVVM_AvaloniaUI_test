@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,10 @@ namespace TaskManager.Desktop.ViewModels;
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    
     private readonly IExceptionHandlingMiddleware _middleware;
+    
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     [ObservableProperty]
     private string _newTaskTitle = string.Empty;
@@ -40,7 +44,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         return ExecuteAsync(async service =>
         {
-            var tasks = await service.GetAllAsync(CancellationToken.None);
+            var tasks = await service.GetAllAsync(_cancellationTokenSource.Token);
 
             Tasks.Clear();
             foreach (var task in tasks)
@@ -55,8 +59,8 @@ public sealed partial class MainViewModel : ObservableObject
     {
         return ExecuteAsync(async service =>
         {
-            var task = new TaskItem { Title = NewTaskTitle };
-            var created = await service.CreateAsync(task, CancellationToken.None);
+            var task = new TaskModel { Title = NewTaskTitle };
+            var created = await service.CreateAsync(task, _cancellationTokenSource.Token);
 
             Tasks.Add(CreateRow(created));
             NewTaskTitle = string.Empty;
@@ -71,10 +75,10 @@ public sealed partial class MainViewModel : ObservableObject
             return Task.CompletedTask;
         }
 
-        return DeleteRowAsync(SelectedTask);
+        return DeleteRowAsync(SelectedTask, _cancellationTokenSource.Token);
     }
 
-    private TaskRowViewModel CreateRow(TaskItem task)
+    private TaskRowViewModel CreateRow(TaskModel task)
     {
         return new TaskRowViewModel(task, ToggleCompletionAsync, DeleteRowAsync);
     }
@@ -88,11 +92,11 @@ public sealed partial class MainViewModel : ObservableObject
             () => row.IsCompleted = !requested);
     }
 
-    private Task DeleteRowAsync(TaskRowViewModel row)
+    private Task DeleteRowAsync(TaskRowViewModel row, CancellationToken token)
     {
         return ExecuteAsync(async service =>
         {
-            await service.DeleteAsync(row.Id, CancellationToken.None);
+            await service.DeleteAsync(row.Id, token);
 
             Tasks.Remove(row);
         });
@@ -127,5 +131,10 @@ public sealed partial class MainViewModel : ObservableObject
     partial void OnErrorMessageChanged(string? value)
     {
         OnPropertyChanged(nameof(HasError));
+    }
+
+    public void CancelPending()
+    {
+        _cancellationTokenSource.Cancel();
     }
 }

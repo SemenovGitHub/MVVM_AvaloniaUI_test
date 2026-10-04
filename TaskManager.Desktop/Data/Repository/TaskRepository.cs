@@ -3,7 +3,7 @@ using TaskManager.Desktop.Data.Repository.RepositoryBase;
 
 namespace TaskManager.Desktop.Data.Repository;
 
-public sealed class TaskRepository : RepositoryBase<TaskItemEntity>, ITaskRepository
+public sealed class TaskRepository : RepositoryBase<TaskEntity>, ITaskRepository
 {
     public TaskRepository(TaskDbContext context) : base(context)
     {
@@ -11,12 +11,12 @@ public sealed class TaskRepository : RepositoryBase<TaskItemEntity>, ITaskReposi
 
     protected override string NotFoundMessage => "Задача не найдена.";
 
-    public Task<TaskItemEntity> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken)
+    public Task<TaskEntity> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken)
     {
         return ExecuteInTransactionAsync(
-            async () =>
+            async (token) =>
             {
-                var entity = await GetByIdAsync(id, cancellationToken);
+                var entity = await GetByIdAsync(id, token);
                 entity.IsCompleted = isCompleted;
                 return entity;
             },

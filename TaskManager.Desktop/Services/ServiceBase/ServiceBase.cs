@@ -8,7 +8,7 @@ using TaskManager.Desktop.Models;
 namespace TaskManager.Desktop.Services;
 
 public abstract class ServiceBase<TModel, TEntity, TRepository> : IServiceBase<TModel>
-    where TModel : class, IBusinessModel
+    where TModel : class, IModel
     where TEntity : class, IEntity
     where TRepository : IRepositoryBase<TEntity>
 {

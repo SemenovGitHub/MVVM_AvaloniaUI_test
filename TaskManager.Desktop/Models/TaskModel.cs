@@ -1,6 +1,6 @@
 namespace TaskManager.Desktop.Models;
 
-public sealed class TaskItem : IBusinessModel
+public sealed class TaskModel : IModel
 {
     public Guid Id { get; set; }
 

@@ -10,7 +10,7 @@ public sealed class TaskDbContext : DbContext
     {
     }
 
-    public DbSet<TaskItemEntity> Tasks => Set<TaskItemEntity>();
+    public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

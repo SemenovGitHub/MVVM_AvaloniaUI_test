@@ -3,7 +3,7 @@ using TaskManager.Desktop.Data.Repository.RepositoryBase;
 
 namespace TaskManager.Desktop.Data.Repository;
 
-public interface ITaskRepository : IRepositoryBase<TaskItemEntity>
+public interface ITaskRepository : IRepositoryBase<TaskEntity>
 {
-    Task<TaskItemEntity> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken);
+    Task<TaskEntity> SetCompletionAsync(Guid id, bool isCompleted, CancellationToken cancellationToken);
 }

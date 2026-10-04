@@ -1,6 +1,6 @@
 namespace TaskManager.Desktop.Models;
 
-public interface IBusinessModel
+public interface IModel
 {
     Guid Id { get; set; }
 

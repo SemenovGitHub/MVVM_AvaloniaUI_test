@@ -1,6 +1,6 @@
 namespace TaskManager.Desktop.Data.Entities;
 
-public sealed class TaskItemEntity : IEntity
+public sealed class TaskEntity : IEntity
 {
     public Guid Id { get; set; }
 

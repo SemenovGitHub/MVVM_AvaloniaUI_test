@@ -8,7 +8,7 @@ public sealed class TaskMappingProfile : Profile
 {
     public TaskMappingProfile()
     {
-        CreateMap<TaskItem, TaskItemEntity>()
+        CreateMap<TaskModel, TaskEntity>()
             .ReverseMap();
     }
 }

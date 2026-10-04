@@ -6,12 +6,12 @@ namespace TaskManager.Desktop.ViewModels;
 
 public sealed partial class TaskRowViewModel : ObservableObject
 {
-    private readonly TaskItem _task;
+    private readonly TaskModel _task;
     private readonly Func<TaskRowViewModel, Task> _completionChanged;
     private readonly Func<TaskRowViewModel, Task> _deleted;
 
     public TaskRowViewModel(
-        TaskItem task,
+        TaskModel task,
         Func<TaskRowViewModel, Task> completionChanged,
         Func<TaskRowViewModel, Task> deleted)
     {

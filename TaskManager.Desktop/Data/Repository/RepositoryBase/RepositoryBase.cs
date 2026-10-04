@@ -41,9 +41,9 @@ public class RepositoryBase<TEntity> : IRepositoryBase<TEntity>
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         await ExecuteInTransactionAsync(
-            async () =>
+            async (token) =>
             {
-                var entity = await GetByIdAsync(id, cancellationToken);
+                var entity = await GetByIdAsync(id, token);
                 entity.IsDeleted = true;
                 entity.DeletedAt = DateTime.UtcNow;
                 return entity;
@@ -52,12 +52,12 @@ public class RepositoryBase<TEntity> : IRepositoryBase<TEntity>
     }
 
     protected async Task<TResult> ExecuteInTransactionAsync<TResult>(
-        Func<Task<TResult>> operation,
+        Func<CancellationToken, Task<TResult>> operation,
         CancellationToken cancellationToken)
     {
         await using var transaction = await Context.Database.BeginTransactionAsync(cancellationToken);
 
-        var result = await operation();
+        var result = await operation(cancellationToken);
         await Context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
