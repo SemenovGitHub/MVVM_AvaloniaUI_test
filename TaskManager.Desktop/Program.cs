@@ -21,14 +21,6 @@ internal static class Program
         builder.StartWithClassicDesktopLifetime(args);
     }
 
-    // Нужен превьюеру Avalonia, он вызывает метод без аргументов.
-    public static AppBuilder BuildAvaloniaApp()
-    {
-        var services = AppServices.Build();
-
-        return BuildAvaloniaApp(services);
-    }
-
     private static AppBuilder BuildAvaloniaApp(IServiceProvider services)
     {
         return AppBuilder.Configure(() => new App(services))
