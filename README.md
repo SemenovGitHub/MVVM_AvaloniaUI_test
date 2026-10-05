@@ -1,78 +1,56 @@
 # TaskManager
 
-Монолитный бэкенд списка задач на ASP.NET Core. Интерфейс Avalonia будет добавлен следующим шагом в этот же проект.
+Список задач на Avalonia UI и PostgreSQL (EF Core 8). Один проект UI `TaskManager.Desktop`, тесты в `TaskManagerTests`.
 
-## Сборка и запуск
+![Интерфейс](UI.png)
+
+## Запуск
 
 Нужны .NET SDK 8 и Docker.
 
 ```bash
 docker compose up -d
-dotnet run --project TaskManager
+dotnet run --project TaskManager.Desktop
 ```
 
-API: `http://localhost:5088`  
-Swagger: `http://localhost:5088/swagger`
+Postgres: порт **5433**, база `tasks`, пользователь и пароль `taskmanager`. Миграция `InitialCreate` применяется при старте (`Database.Migrate()`). Если база недоступна, окно всё равно открывается.
 
-PostgreSQL поднимается на порту **5433**, база `tasks`, пользователь и пароль `taskmanager`.
-
-## Миграции
-
-При старте приложение само вызывает `Database.MigrateAsync()`. Если база недоступна, процесс не завершается: ошибка пишется в лог, а запросы к данным возвращают ответ через middleware.
-
-Ручное применение:
-
-```bash
-dotnet tool restore
-dotnet ef database update --project TaskManager
-```
-
-Новая миграция:
-
-```bash
-dotnet ef migrations add <Name> --project TaskManager --output-dir Infrastructure/Persistence/Migrations
-```
-
-Первая миграция уже создана: `InitialCreate`.
+Enter — добавить, Delete — удалить выбранную, F5 — обновить.
 
 ## Архитектура
 
-Один проект `TaskManager`, слои разведены по папкам.
+MVVM внутри одного десктопного проекта.
 
-- **Domain** — бизнес-модель `TaskItem` и сервисы. Общий CRUD вынесен в `ServiceBase<TModel, TEntity, TRepository>` / `IServiceBase<TModel>`: получение списка и записи по идентификатору, создание, мягкое удаление. Доступ к полям внутри дженерика дают ограничения `IBusinessModel` для модели и `IEntity` для сущности. `TaskService` / `ITaskService` наследуют базу и добавляют `SetCompletionAsync`, потому что `IsCompleted` есть только у задачи. Каждая операция сервиса — ровно один вызов репозитория; сервис отвечает за валидацию, маппинг и логирование. Сервис не собирает объекты другого слоя по полям: между моделью, сущностью и контрактами API работает только AutoMapper.
-- **Infrastructure** — `TaskDbContext` (scoped), `IEntityTypeConfiguration`, generic `RepositoryBase<TEntity>` поверх `DbSet<TEntity>` и его типизированная пара `ITaskRepository` / `TaskRepository`, профиль AutoMapper, `TaskItemValidator`. Репозиторий инкапсулирует работу с контекстом целиком: поиск, пометку удаления, смену признака выполнения и вызов `SaveChangesAsync`. Отсутствие записи он сам сообщает исключением `NotFoundException`; текст задаёт `NotFoundMessage`, который наследник переопределяет. AutoMapper 15.1.1 при локальном запуске пишет предупреждение о лицензии: для разработки и проверки это штатно.
-- **Presentation** — HTTP API и middleware, который перехватывает ошибки валидации, «не найдено» и ошибки базы, чтобы запрос завершался ответом, а не падением процесса. Сервисы и контроллеры сами ошибки не обрабатывают.
+- **View** — `MainWindow.axaml`, привязки и команды, code-behind только инициализация и закрытие окна.
+- **ViewModel** — `MainViewModel` (список, ввод, ошибки, команды), `TaskRowViewModel` (строка таблицы).
+- **Сервис** — `TaskService`: валидация FluentValidation, AutoMapper, один вызов репозитория на операцию.
+- **Репозиторий** — `TaskRepository` над `DbSet`, мягкое удаление, транзакция на чтение+запись.
+- **Данные** — `TaskDbContext` (scoped), query filter `!IsDeleted`. `TaskDbContextFactory` только для `dotnet ef`.
 
-Операции, где есть и чтение, и запись (мягкое удаление, смена признака выполнения), выполняются в явной транзакции: `ExecuteInTransactionAsync` в `RepositoryBase` открывает транзакцию, выполняет действие, сохраняет и коммитит. Исключение или отмена токена приводят к откату, потому что транзакция освобождается без коммита. Создание транзакции не требует: это один `SaveChangesAsync`. Уровень изоляции по умолчанию, токена конкуренции у сущности нет, поэтому одновременное изменение одной задачи из двух запросов не вызовет конфликт — побеждает последняя запись.
+Ошибки ловит `ExceptionHandlingMiddleware`, в окне показывается текст из `ErrorText`. `DbContext` живёт скоуп на операцию: ViewModel — синглтон и не держит сервис в поле.
 
-Удаление мягкое: у строки выставляются `IsDeleted` и `DeletedAt`. Скрывает такие строки общее правило: `OnModelCreating` проходит по всем сущностям модели и каждой, реализующей `IEntity`, ставит query filter `entity => !entity.IsDeleted`. Отдельной настройки в конфигурации сущности не требуется, при необходимости фильтр снимается через `IgnoreQueryFilters()`.
+## Порядок запуска приложения
 
-## API
+1. `Program.Main` собирает DI (`AppServices.Build`).
+2. Подписка на необработанные исключения.
+3. `ApplyMigrations` — scoped-контекст, `Migrate()`.
+4. Avalonia: `StartWithClassicDesktopLifetime`.
+5. `App` создаёт `MainWindow`, кладёт `MainViewModel` в `DataContext`, вызывает `ReloadCommand`.
+6. Закрытие окна: `Dispose` у ViewModel (отмена токена); после выхода из цикла сообщений уничтожается контейнер.
 
-| Метод | Путь | Назначение |
-| --- | --- | --- |
-| GET | `/api/tasks` | Список задач без удалённых |
-| GET | `/api/tasks/{id}` | Одна задача |
-| POST | `/api/tasks` | Создать. Тело: `{ "title": "..." }` |
-| PATCH | `/api/tasks/{id}/completion` | Отметить выполнение. Тело: `{ "isCompleted": true }` |
-| DELETE | `/api/tasks/{id}` | Мягкое удаление |
+## Тесты
 
-Пустой `title` или строка длиннее 100 символов не сохраняется. Ответ `400` содержит текст ошибки.
+```bash
+dotnet test --project TaskManagerTests
+```
 
-## Что сделано и что нет
+Нужен запущенный Docker: репозиторий гоняется на эфемерном Postgres (Testcontainers).
 
-Сделано:
+Порядок прогона класса репозитория:
 
-- модель задачи, список, создание, отметка выполнения, мягкое удаление;
-- EF Core 8 и провайдер PostgreSQL, миграция `InitialCreate`, применение при старте;
-- `DbContext` со scoped lifetime, репозиторий над `DbSet`;
-- асинхронные операции с базой, DI, `ILogger<T>`;
-- FluentValidation от бизнес-модели: `TaskItemValidator` внедряется в сервис как `IValidator<TaskItem>`;
-- AutoMapper как единственное место преобразования моделей;
-- middleware для ошибок, в том числе ошибок базы.
+1. xUnit создаёт `PostgresFixture`.
+2. `InitializeAsync` — `Container.StartAsync()`.
+3. Конструктор `TaskRepositoryTests`, факты (`AddAsync` / чтение).
+4. `DisposeAsync` — контейнер гасится.
 
-Не сделано:
-
-- Avalonia UI: таблица, добавление по Enter, чекбокс, масштабирование окна, подсветка поля, клавиатурная навигация;
-- unit-тесты;
-- файл `tasks.db`. В задании одновременно указаны локальный файл и провайдер PostgreSQL. Реализован PostgreSQL: это серверная база, её нельзя положить в один файл приложения как SQLite.
+Валидатор (`TaskModelValidatorTests`) Docker не использует: контейнер Autofac, `TestValidate` пустого и слишком длинного `Title`.
