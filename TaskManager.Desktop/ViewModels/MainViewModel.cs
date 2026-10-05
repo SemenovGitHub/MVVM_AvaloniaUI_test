@@ -8,13 +8,15 @@ using TaskManager.Desktop.Services;
 
 namespace TaskManager.Desktop.ViewModels;
 
-public sealed partial class MainViewModel : ObservableObject
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
     private readonly IExceptionHandlingMiddleware _middleware;
 
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly CancellationTokenSource _lifeTimeCancellationTokenSource = new();
+    
+    private bool _disposed;
 
     [ObservableProperty] private string _newTaskTitle = string.Empty;
 
@@ -24,14 +26,13 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty] private TaskRowViewModel? _selectedTask;
 
+    [ObservableProperty] private ObservableCollection<TaskRowViewModel> _tasks = [];
+
     public MainViewModel(IServiceScopeFactory scopeFactory, IExceptionHandlingMiddleware middleware)
     {
         _scopeFactory = scopeFactory;
         _middleware = middleware;
     }
-
-    public ObservableCollection<TaskRowViewModel> Tasks { get; } = new();
-
     public bool HasError => ErrorMessage is not null;
 
     [RelayCommand]
@@ -40,12 +41,16 @@ public sealed partial class MainViewModel : ObservableObject
         return ExecuteAsync(async (service, token) =>
         {
             var tasks = await service.GetAllAsync(token);
-
-            Tasks.Clear();
+            
+            var rows = new ObservableCollection<TaskRowViewModel>();
+            
             foreach (var task in tasks)
             {
-                Tasks.Add(CreateRow(task));
+                rows.Add(CreateRow(task));
             }
+            
+            Tasks =  rows;
+            
         }, cancellationToken);
     }
 
@@ -100,6 +105,8 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task ExecuteAsync(Func<ITaskService, CancellationToken, Task> operation,
         CancellationToken cancellationToken, Action? onFailure = null)
     {
+        if (_disposed) return;
+        
         IsBusy = true;
         ErrorMessage = null;
 
@@ -107,7 +114,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             using var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken,
-                _cancellationTokenSource.Token);
+                _lifeTimeCancellationTokenSource.Token);
 
             ErrorMessage = await _middleware.InvokeAsync(async () =>
             {
@@ -137,8 +144,12 @@ public sealed partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(HasError));
     }
 
-    public void CancelPending()
+    public void Dispose()
     {
-        _cancellationTokenSource.Cancel();
+        if (_disposed) return;
+        _disposed = true;
+
+        _lifeTimeCancellationTokenSource.Cancel();
+        _lifeTimeCancellationTokenSource.Dispose();
     }
 }

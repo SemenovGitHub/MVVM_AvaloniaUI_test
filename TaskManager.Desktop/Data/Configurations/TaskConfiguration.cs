@@ -4,7 +4,7 @@ using TaskManager.Desktop.Data.Entities;
 
 namespace TaskManager.Desktop.Data.Configurations;
 
-public sealed class TaskItemConfiguration : IEntityTypeConfiguration<TaskEntity>
+public sealed class TaskConfiguration : IEntityTypeConfiguration<TaskEntity>
 {
     private const int ConstMaxTitleLength = 100;
     

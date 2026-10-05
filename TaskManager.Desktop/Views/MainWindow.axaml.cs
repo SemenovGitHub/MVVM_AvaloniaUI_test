@@ -8,13 +8,5 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
-        Closing += (_, _) =>
-        {
-            if (DataContext is MainViewModel viewModel)
-            {
-                viewModel.CancelPending();
-            }
-        };
     }
 }
