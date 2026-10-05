@@ -9,4 +9,14 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.Dispose();
+        }
+
+        base.OnClosing(e);
+    }
 }

@@ -17,8 +17,15 @@ internal static class Program
         CatchUnhandledExceptions(services);
         ApplyMigrations(services);
 
-        var builder = BuildAvaloniaApp(services);
-        builder.StartWithClassicDesktopLifetime(args);
+        try
+        {
+            var builder = BuildAvaloniaApp(services);
+            builder.StartWithClassicDesktopLifetime(args);
+        }
+        finally
+        {
+            (services as IDisposable)?.Dispose();
+        }
     }
 
     private static AppBuilder BuildAvaloniaApp(IServiceProvider services)
