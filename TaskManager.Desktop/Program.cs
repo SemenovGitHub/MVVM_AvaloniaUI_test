@@ -15,17 +15,12 @@ internal static class Program
         var services = AppServices.Build();
 
         CatchUnhandledExceptions(services);
+
         ApplyMigrations(services);
 
-        try
-        {
-            var builder = BuildAvaloniaApp(services);
-            builder.StartWithClassicDesktopLifetime(args);
-        }
-        finally
-        {
-            (services as IDisposable)?.Dispose();
-        }
+        var builder = BuildAvaloniaApp(services);
+
+        builder.StartWithClassicDesktopLifetime(args);
     }
 
     private static AppBuilder BuildAvaloniaApp(IServiceProvider services)
@@ -66,7 +61,8 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Не удалось применить миграции. Окно откроется, операции с данными вернут ошибку.");
+            logger.LogError(exception,
+                "Не удалось применить миграции. Окно откроется, операции с данными вернут ошибку.");
         }
     }
 }
