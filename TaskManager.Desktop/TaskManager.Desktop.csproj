@@ -18,6 +18,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.13" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.13" />
     <PackageReference Include="AutoMapper" Version="15.1.1" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />

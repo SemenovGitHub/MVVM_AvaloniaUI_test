@@ -84,6 +84,7 @@
       </DataGrid.Columns>
       
       <DataGrid.Styles>
+        
         <Style Selector="DataGridCell">
           <Setter Property="Background" Value="Transparent" />
         </Style>
@@ -96,6 +97,7 @@
         <Style Selector="DataGridRow.completed:selected">
           <Setter Property="Background" Value="#A5D6A7" />
         </Style>
+        
       </DataGrid.Styles>
       
     </DataGrid>
