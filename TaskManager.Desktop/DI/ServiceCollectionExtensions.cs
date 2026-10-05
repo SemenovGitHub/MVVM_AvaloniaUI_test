@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ITaskService, TaskService>();
-        services.AddScoped<IValidator<TaskModel>, TaskValidator>();
+        services.AddScoped<IValidator<TaskModel>, TaskModelValidator>();
         services.AddAutoMapper(config => config.AddProfile<TaskMappingProfile>());
 
         services.AddSingleton<IExceptionHandlingMiddleware, ExceptionHandlingMiddleware>();

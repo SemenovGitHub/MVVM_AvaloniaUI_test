@@ -3,11 +3,11 @@ using TaskManager.Desktop.Models;
 
 namespace TaskManager.Desktop.Validation;
 
-public sealed class TaskValidator : AbstractValidator<TaskModel>
+public sealed class TaskModelValidator : AbstractValidator<TaskModel>
 {
     private const int ConstMaxTitleLength = 100;
 
-    public TaskValidator()
+    public TaskModelValidator()
     {
         RuleFor(x => x.Title)
             .NotEmpty()

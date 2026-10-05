@@ -29,7 +29,7 @@ public class RepositoryBase<TEntity> : IRepositoryBase<TEntity>
     public async Task<TEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await Entities.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken)
-            ?? throw new NotFoundException(NotFoundMessage);
+               ?? throw new NotFoundException(NotFoundMessage);
     }
 
     public async Task AddAsync(TEntity entity, CancellationToken cancellationToken)
