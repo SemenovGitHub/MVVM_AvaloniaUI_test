@@ -15,7 +15,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IExceptionHandlingMiddleware _middleware;
 
     private readonly CancellationTokenSource _lifeTimeCancellationTokenSource = new();
-    
+
     private bool _disposed;
 
     [ObservableProperty] private string _newTaskTitle = string.Empty;
@@ -24,8 +24,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private bool _isBusy;
 
-    [ObservableProperty] private TaskRowViewModel? _selectedTask;
-
     [ObservableProperty] private ObservableCollection<TaskRowViewModel> _tasks = [];
 
     public MainViewModel(IServiceScopeFactory scopeFactory, IExceptionHandlingMiddleware middleware)
@@ -33,7 +31,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _scopeFactory = scopeFactory;
         _middleware = middleware;
     }
-    public bool HasError => ErrorMessage is not null;
 
     [RelayCommand]
     private Task ReloadAsync(CancellationToken cancellationToken)
@@ -41,16 +38,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         return ExecuteAsync(async (service, token) =>
         {
             var tasks = await service.GetAllAsync(token);
-            
+
             var rows = new ObservableCollection<TaskRowViewModel>();
-            
+
             foreach (var task in tasks)
             {
                 rows.Add(CreateRow(task));
             }
-            
-            Tasks =  rows;
-            
+
+            Tasks = rows;
         }, cancellationToken);
     }
 
@@ -67,17 +63,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }, cancellationToken);
     }
 
-    [RelayCommand]
-    private Task DeleteSelectedAsync(CancellationToken cancellationToken)
-    {
-        if (SelectedTask is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        return DeleteRowAsync(SelectedTask, cancellationToken);
-    }
-
     private TaskRowViewModel CreateRow(TaskModel task)
     {
         return new TaskRowViewModel(task, ToggleCompletionAsync, DeleteRowAsync);
@@ -85,11 +70,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     private Task ToggleCompletionAsync(TaskRowViewModel row, CancellationToken cancellationToken)
     {
-        var requested = row.IsCompleted;
+        var newValue = row.IsCompleted;
 
-        return ExecuteAsync(
-            (service, token) => { return service.SetCompletionAsync(row.Id, requested, token); }, cancellationToken,
-            () => row.IsCompleted = !requested);
+        return ExecuteAsync(Save, cancellationToken, Restore);
+        
+        Task Save(ITaskService service, CancellationToken token)
+        {
+            return service.SetCompletionAsync(row.Id, newValue, token);
+        }
+        void Restore()
+        {
+            row.IsCompleted = !newValue;
+        }
     }
 
     private Task DeleteRowAsync(TaskRowViewModel row, CancellationToken cancellationToken)
@@ -106,7 +98,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         CancellationToken cancellationToken, Action? onFailure = null)
     {
         if (_disposed) return;
-        
+
         IsBusy = true;
         ErrorMessage = null;
 
@@ -124,24 +116,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 await operation(service, linkedToken.Token);
             });
 
-            if (HasError)
+            if (ErrorMessage is not null)
             {
                 onFailure?.Invoke();
+                await HideError();
             }
-        }
-        catch (OperationCanceledException)
-        {
-            onFailure?.Invoke();
         }
         finally
         {
             IsBusy = false;
         }
-    }
-
-    partial void OnErrorMessageChanged(string? value)
-    {
-        OnPropertyChanged(nameof(HasError));
     }
 
     public void Dispose()
@@ -151,5 +135,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         _lifeTimeCancellationTokenSource.Cancel();
         _lifeTimeCancellationTokenSource.Dispose();
+    }
+    
+    private async Task HideError()
+    {
+        var currentError = ErrorMessage;
+        
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        
+        if (ErrorMessage == currentError)
+        {
+            ErrorMessage = null;
+        }
     }
 }
