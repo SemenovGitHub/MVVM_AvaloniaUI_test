@@ -73,11 +73,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var newValue = row.IsCompleted;
 
         return ExecuteAsync(Save, cancellationToken, Restore);
-        
+
         Task Save(ITaskService service, CancellationToken token)
         {
             return service.SetCompletionAsync(row.Id, newValue, token);
         }
+
         void Restore()
         {
             row.IsCompleted = !newValue;
@@ -136,13 +137,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _lifeTimeCancellationTokenSource.Cancel();
         _lifeTimeCancellationTokenSource.Dispose();
     }
-    
+
     private async Task HideError()
     {
         var currentError = ErrorMessage;
-        
+
         await Task.Delay(TimeSpan.FromSeconds(2));
-        
+
         if (ErrorMessage == currentError)
         {
             ErrorMessage = null;
