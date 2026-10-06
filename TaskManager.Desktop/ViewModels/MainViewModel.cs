@@ -24,8 +24,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private bool _isBusy;
 
-    [ObservableProperty] private TaskRowViewModel? _selectedTask;
-
     [ObservableProperty] private ObservableCollection<TaskRowViewModel> _tasks = [];
 
     public MainViewModel(IServiceScopeFactory scopeFactory, IExceptionHandlingMiddleware middleware)
@@ -63,17 +61,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Tasks.Add(CreateRow(created));
             NewTaskTitle = string.Empty;
         }, cancellationToken);
-    }
-
-    [RelayCommand]
-    private Task DeleteSelectedAsync(CancellationToken cancellationToken)
-    {
-        if (SelectedTask is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        return DeleteRowAsync(SelectedTask, cancellationToken);
     }
 
     private TaskRowViewModel CreateRow(TaskModel task)

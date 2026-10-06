@@ -9,26 +9,15 @@
         MinWidth="520"
         MinHeight="320">
 
-  <Window.KeyBindings>
-    <KeyBinding Gesture="F5" Command="{Binding ReloadCommand}" />
-    <KeyBinding Gesture="Delete" Command="{Binding DeleteSelectedCommand}" />
-  </Window.KeyBindings>
-
   <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16" ColumnDefinitions="*">
 
     <DockPanel Grid.Row="0" LastChildFill="True">
       <Button DockPanel.Dock="Right"
               Margin="8,0,0,0"
               Content="Добавить"
-              Command="{Binding AddCommand}"
-              IsDefault="True" />
+              Command="{Binding AddCommand}" />
       <TextBox Text="{Binding NewTaskTitle}"
-               Watermark="Название задачи, затем Enter"
-               TabIndex="0">
-        <TextBox.KeyBindings>
-          <KeyBinding Gesture="Enter" Command="{Binding AddCommand}" />
-        </TextBox.KeyBindings>
-      </TextBox>
+               Watermark="Название задачи" />
     </DockPanel>
 
     <TextBlock Grid.Row="1"
@@ -40,7 +29,6 @@
     <DataGrid Grid.Row="2"
               Margin="0,12,0,0"
               ItemsSource="{Binding Tasks}"
-              SelectedItem="{Binding SelectedTask}"
               AutoGenerateColumns="False"
               IsReadOnly="True"
               CanUserReorderColumns="False"
@@ -103,8 +91,6 @@
 
     <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0" Spacing="12">
       <Button Content="Обновить" Command="{Binding ReloadCommand}" />
-      <TextBlock VerticalAlignment="Center"
-                 Text="Enter — добавить, Delete — удалить выбранную, F5 — обновить" />
       <TextBlock VerticalAlignment="Center"
                  IsVisible="{Binding IsBusy}"
                  Text="Выполняется…" />

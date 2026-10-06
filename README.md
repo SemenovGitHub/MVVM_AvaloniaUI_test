@@ -15,8 +15,6 @@ dotnet run --project TaskManager.Desktop
 
 Postgres: порт **5433**, база `tasks`, пользователь и пароль `taskmanager`. Миграция `InitialCreate` применяется при старте (`Database.Migrate()`). Если база недоступна, окно всё равно открывается.
 
-Enter — добавить, Delete — удалить выбранную, F5 — обновить.
-
 ## Архитектура
 
 MVVM внутри одного десктопного проекта.
