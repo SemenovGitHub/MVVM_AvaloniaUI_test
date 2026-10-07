@@ -9,9 +9,9 @@
         MinWidth="520"
         MinHeight="320">
 
-  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
 
-    <DockPanel Grid.Row="0" LastChildFill="True">
+    <DockPanel Grid.Row="0">
       <Button DockPanel.Dock="Right"
               Margin="4,0,0,0"
               Content="Добавить"
@@ -29,9 +29,7 @@
     <DataGrid Grid.Row="2"
               Margin="0,12,0,0"
               ItemsSource="{Binding Tasks}"
-              AutoGenerateColumns="False"
               IsReadOnly="True"
-              CanUserReorderColumns="False"
               CanUserResizeColumns="True"
               GridLinesVisibility="Horizontal"
               HeadersVisibility="Column">
@@ -41,7 +39,7 @@
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="vm:TaskRowViewModel">
               <CheckBox HorizontalAlignment="Center"
-                        IsChecked="{Binding IsCompleted, Mode=TwoWay}"
+                        IsChecked="{Binding IsCompleted}"
                         Command="{Binding SaveCompletionCommand}" />
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
