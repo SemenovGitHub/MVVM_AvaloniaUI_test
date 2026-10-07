@@ -9,7 +9,7 @@
         MinWidth="520"
         MinHeight="320">
 
-  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto" Margin="16" ShowGridLines="True">
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto" Margin="16">
 
     <DockPanel Grid.Row="0" LastChildFill="True">
       <Button DockPanel.Dock="Right"
