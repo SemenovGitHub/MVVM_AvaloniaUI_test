@@ -9,15 +9,15 @@
         MinWidth="520"
         MinHeight="320">
 
-  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16" ColumnDefinitions="*">
+  <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,*,Auto" Margin="16">
 
     <DockPanel Grid.Row="0" LastChildFill="True">
       <Button DockPanel.Dock="Right"
-              Margin="8,0,0,0"
+              Margin="4,0,0,0"
               Content="Добавить"
               Command="{Binding AddCommand}" />
       <TextBox Text="{Binding NewTaskTitle}"
-               Watermark="Название задачи" />
+               Watermark="Введите название задачи" />
     </DockPanel>
 
     <TextBlock Grid.Row="1"
@@ -80,9 +80,6 @@
         </Style>
         <Style Selector="DataGridRow.completed">
           <Setter Property="Background" Value="#C8E6C9" />
-        </Style>
-        <Style Selector="DataGridRow.completed:selected">
-          <Setter Property="Background" Value="#A5D6A7" />
         </Style>
         
       </DataGrid.Styles>
