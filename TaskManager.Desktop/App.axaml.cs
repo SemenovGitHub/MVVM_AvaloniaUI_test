@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using TaskManager.Desktop.DI;
 using TaskManager.Desktop.ViewModels;
 using TaskManager.Desktop.Views;
 
@@ -11,11 +10,6 @@ namespace TaskManager.Desktop;
 public sealed class App : Application
 {
     private readonly IServiceProvider _services;
-
-    public App()
-    {
-        _services = AppServices.Build();
-    }
 
     public App(IServiceProvider services)
     {
