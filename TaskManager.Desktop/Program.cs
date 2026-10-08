@@ -18,17 +18,12 @@ internal static class Program
 
         ApplyMigrations(services);
 
-        var builder = BuildAvaloniaApp(services);
-
-        builder.StartWithClassicDesktopLifetime(args);
-    }
-
-    private static AppBuilder BuildAvaloniaApp(IServiceProvider services)
-    {
-        return AppBuilder.Configure(() => new App(services))
+        var app = AppBuilder.Configure(() => new App(services))
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+
+        app.StartWithClassicDesktopLifetime(args);
     }
 
     private static void CatchUnhandledExceptions(IServiceProvider services)
