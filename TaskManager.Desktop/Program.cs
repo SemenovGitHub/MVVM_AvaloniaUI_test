@@ -14,8 +14,6 @@ internal static class Program
     {
         var services = AppServices.Build();
 
-        CatchUnhandledExceptions(services);
-
         ApplyMigrations(services);
 
         var app = AppBuilder.Configure(() => new App(services))
@@ -24,22 +22,6 @@ internal static class Program
             .LogToTrace();
 
         app.StartWithClassicDesktopLifetime(args);
-    }
-
-    private static void CatchUnhandledExceptions(IServiceProvider services)
-    {
-        var logger = services.GetRequiredService<ILogger<App>>();
-
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-        {
-            logger.LogCritical(args.ExceptionObject as Exception, "Необработанное исключение");
-        };
-
-        TaskScheduler.UnobservedTaskException += (_, args) =>
-        {
-            logger.LogError(args.Exception, "Необработанное исключение в задаче");
-            args.SetObserved();
-        };
     }
 
     private static void ApplyMigrations(IServiceProvider services)
